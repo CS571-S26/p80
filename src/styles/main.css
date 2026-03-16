@@ -1,0 +1,63 @@
+/* =====================
+   Color Scheme Variables
+   ===================== */
+
+[data-bs-theme="light"] {
+    --color-bg:           #f0f4f0;
+    --color-bg-secondary: #dde8dd;
+    --color-surface:      #e8efe8;
+    --color-border:       #a8c4a8;
+    --color-text:         #1a1a1a;
+    --color-text-muted:   #4a6b4a;
+    --color-primary:      #1a6b1a;
+    --color-primary-hover:#145714;
+    --color-accent:       #2e8b2e;
+}
+
+[data-bs-theme="dark"] {
+    --color-bg:           #0a0a0a;
+    --color-bg-secondary: #111111;
+    --color-surface:      #1a1a1a;
+    --color-border:       #1f3d1f;
+    --color-text:         #00ff41;
+    --color-text-muted:   #39a839;
+    --color-primary:      #00ff41;
+    --color-primary-hover:#39ff6e;
+    --color-accent:       #00cc33;
+}
+
+/* =====================
+   Base
+   ===================== */
+
+body {
+    font: 1.3rem Inconsolata, monospace;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* =====================
+   Navbar
+   ===================== */
+
+.app-navbar {
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.app-navbar .navbar-brand-text {
+    color: var(--color-primary);
+    font-weight: 700;
+    font-size: 1.2rem;
+    transition: color 0.2s ease;
+}
+
+.app-navbar .navbar-brand-text:hover {
+    color: var(--color-primary-hover);
+}
+
+.app-home {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+}
