@@ -5,7 +5,7 @@ import App from './Components/App.jsx'
 import { BrowserRouter } from "react-router";
 
 createRoot(document.getElementById('root')).render(
-  <BrowserRouter basename='p80'>
+  <BrowserRouter basename='/p80'>
     <App />
   </BrowserRouter>
 )
