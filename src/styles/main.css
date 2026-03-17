@@ -34,7 +34,6 @@ body {
     font: 1.3rem Inconsolata, monospace;
     background-color: var(--color-bg);
     color: var(--color-text);
-    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* =====================
@@ -43,21 +42,23 @@ body {
 
 .app-navbar {
     background-color: var(--color-surface);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 3px solid var(--color-border);
 }
 
 .app-navbar .navbar-brand-text {
     color: var(--color-primary);
     font-weight: 700;
     font-size: 1.2rem;
-    transition: color 0.2s ease;
 }
 
 .app-navbar .navbar-brand-text:hover {
     color: var(--color-primary-hover);
 }
 
+.mt-4 {
+    background-color: var(--color-bg);
+}
+
 .app-home {
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
+
 }

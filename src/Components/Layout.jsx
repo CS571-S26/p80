@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { Outlet } from "react-router";
 import { Navbar, Nav, Form, Button, Container } from "react-bootstrap";
 
 function Layout() {
     const [darkMode, setDarkMode] = useState(() => localStorage.getItem("darkMode") === "true");
+
+    useEffect(() => {
+        document.documentElement.setAttribute("data-bs-theme", darkMode ? "dark" : "light");
+    }, [darkMode]);
 
     function toggleDarkMode() {
         const mode = !darkMode;
@@ -13,7 +17,7 @@ function Layout() {
     }
 
     return (
-        <div data-bs-theme={darkMode ? "dark" : "light"} style={{ minHeight: "100vh" }}>
+        <div style={{ minHeight: "100vh" }}>
             <Navbar expand="lg" className="px-3 app-navbar">
                 <Navbar.Brand as={Link} to="/">
                     <img
@@ -52,7 +56,7 @@ function Layout() {
                 </Navbar.Collapse>
             </Navbar>
 
-            <Container className="mt-4">
+            <Container fluid className="mt-4">
                 <Outlet />
             </Container>
         </div>
