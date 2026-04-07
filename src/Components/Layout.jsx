@@ -1,10 +1,17 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import { Outlet } from "react-router";
+import { getCookie } from "../cookies.js";
 import { Navbar, Nav, Form, Button, Container } from "react-bootstrap";
 
 function Layout() {
     const [darkMode, setDarkMode] = useState(() => localStorage.getItem("darkMode") === "true");
+    const [loggedIn, setLoggedIn] = useState(() => !!getCookie("uid"));
+    const location = useLocation();
+
+    useEffect(() => {
+        setLoggedIn(!!getCookie("uid"));
+    }, [location]);
 
     useEffect(() => {
         document.documentElement.setAttribute("data-bs-theme", darkMode ? "dark" : "light");
@@ -27,7 +34,7 @@ function Layout() {
                         height="40"
                         className="me-2"
                     />
-                    <span className="navbar-brand-text">MyApp</span>
+                    <span className="navbar-brand-text">Highscore</span>
                 </Navbar.Brand>
 
                 <Navbar.Toggle aria-controls="main-nav" />
@@ -45,13 +52,22 @@ function Layout() {
                     </Nav>
 
                     <div className="d-flex align-items-center gap-2">
+                        {loggedIn
+                            ? <Nav className="me-auto align-items-center gap-2">
+                                <Nav.Link as={Link} to="/write-review">Write Review</Nav.Link>
+                            </Nav>
+                            : null
+                        }
                         <Button
                             variant="outline-secondary"
                             onClick={toggleDarkMode}
                         >
                             {darkMode ? "Dark" : "Light"}
                         </Button>
-                        <Button variant="outline-primary">Login</Button>
+                        {loggedIn
+                            ? <Button variant="outline-primary" as={Link} to="/profile">Profile</Button>
+                            : <Button variant="outline-success" as={Link} to="/login">Login</Button>
+                        }
                     </div>
                 </Navbar.Collapse>
             </Navbar>
