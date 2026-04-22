@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router";
+import { useState, useEffect, useRef } from "react";
+import { Link, useLocation, useNavigate } from "react-router";
 import { Outlet } from "react-router";
 import { getCookie } from "../cookies.js";
 import { Navbar, Nav, Form, Button, Container } from "react-bootstrap";
@@ -9,6 +9,8 @@ function Layout() {
     const [darkMode, setDarkMode] = useState(() => localStorage.getItem("darkMode") === "true");
     const [loggedIn, setLoggedIn] = useState(() => !!getCookie("uid"));
     const location = useLocation();
+    const navigate = useNavigate();
+    const searchRef = useRef();
 
     useEffect(() => {
         setLoggedIn(!!getCookie("uid"));
@@ -17,6 +19,14 @@ function Layout() {
     useEffect(() => {
         document.documentElement.setAttribute("data-bs-theme", darkMode ? "dark" : "light");
     }, [darkMode]);
+
+    function handleSearch(e) {
+        if (e.key !== "Enter") return;
+        const val = searchRef.current.value.trim();
+        if (!val) return;
+        navigate(`/search?q=${encodeURIComponent(val)}`);
+        searchRef.current.value = "";
+    }
 
     function toggleDarkMode() {
         const mode = !darkMode;
@@ -48,6 +58,8 @@ function Layout() {
                                 type="search"
                                 placeholder="Search..."
                                 aria-label="Search"
+                                ref={searchRef}
+                                onKeyDown={handleSearch}
                             />
                         </Form>
                     </Nav>

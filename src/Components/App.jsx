@@ -6,6 +6,7 @@ import Login from "../Pages/Login.jsx";
 import Register from "../Pages/Register.jsx";
 import Profile from "../Pages/Profile.jsx";
 import Review from "../Pages/Review.jsx";
+import SearchResultPage from "../Pages/SearchResultPage.jsx";
 
 function App(){
     return (
@@ -18,6 +19,7 @@ function App(){
                     <Route path="/register" element={<Register />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/write-review" element={<Review />} />
+                    <Route path="/search" element={<SearchResultPage />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Route>
             </Routes>

@@ -19,7 +19,11 @@ function Login() {
             setCookie("uid", cred.user.uid);
             navigate("/");
         } catch (err) {
-            setError(err.message);
+            if("Firebase: Error (auth/invalid-credential)." === err.message) {
+                setError("Invalid email or password.");
+            } else {
+                setError("An error occurred. Please try again.");
+            }
         }
     }
 

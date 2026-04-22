@@ -45,6 +45,7 @@ function Profile() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
     const [confirmLogout, setConfirmLogout] = useState(false);
+    const confirmBtnRef = useRef();
     const [reviews, setReviews] = useState([]);
     const usernameRef = useRef();
     const navigate = useNavigate();
@@ -91,6 +92,20 @@ function Profile() {
         setUsername(newUsername);
         setReviews(prev => prev.map(r => ({ ...r, username: newUsername })));
     }
+
+    useEffect(() => {
+        if (!confirmLogout) return;
+        function cancel(e) {
+            if (confirmBtnRef.current && confirmBtnRef.current.contains(e.target)) return;
+            setConfirmLogout(false);
+        }
+        document.addEventListener("mousedown", cancel);
+        document.addEventListener("keydown", cancel);
+        return () => {
+            document.removeEventListener("mousedown", cancel);
+            document.removeEventListener("keydown", cancel);
+        };
+    }, [confirmLogout]);
 
     async function handleLogout() {
         await signOut(auth);
@@ -143,7 +158,7 @@ function Profile() {
             <div style={{ marginTop: "auto", paddingBottom: "24px" }}>
                 {!confirmLogout
                     ? <Button variant="danger" onClick={() => setConfirmLogout(true)}>Log Out</Button>
-                    : <Button variant="danger" onClick={handleLogout}>Are You Sure?</Button>
+                    : <Button ref={confirmBtnRef} variant="danger" onClick={handleLogout}>Are You Sure?</Button>
                 }
             </div>
         </div>
