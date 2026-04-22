@@ -58,3 +58,92 @@ body {
 .app-home {
 
 }
+
+/* =====================
+   Review Carousel
+   ===================== */
+
+.review-carousel-wrapper {
+    width: 100%;
+}
+
+.review-carousel-inner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.carousel-viewport {
+    flex: 1;
+    overflow: hidden;
+    min-width: 0;
+}
+
+.carousel-arrow {
+    background: none;
+    border: none;
+    font-size: 3rem;
+    line-height: 1;
+    padding: 0 4px;
+    flex-shrink: 0;
+    transition: color 0.15s, opacity 0.15s;
+    user-select: none;
+}
+
+.carousel-arrow-active {
+    color: var(--color-primary);
+    opacity: 1;
+    cursor: pointer;
+}
+
+.carousel-arrow-active:hover {
+    color: var(--color-primary-hover);
+}
+
+.carousel-arrow-disabled {
+    color: var(--color-text-muted);
+    opacity: 0.25;
+    cursor: not-allowed;
+}
+
+@keyframes carouselExitLeft {
+    from { transform: translateX(0); opacity: 1; }
+    to   { transform: translateX(-110%); opacity: 0; }
+}
+@keyframes carouselExitRight {
+    from { transform: translateX(0); opacity: 1; }
+    to   { transform: translateX(110%); opacity: 0; }
+}
+@keyframes carouselEnterRight {
+    from { transform: translateX(110%); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+}
+@keyframes carouselEnterLeft {
+    from { transform: translateX(-110%); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+}
+
+.carousel-exit-left  { animation: carouselExitLeft  280ms ease forwards; }
+.carousel-exit-right { animation: carouselExitRight 280ms ease forwards; }
+.carousel-enter-right { animation: carouselEnterRight 280ms ease forwards; }
+.carousel-enter-left  { animation: carouselEnterLeft  280ms ease forwards; }
+
+.carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.carousel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-border);
+    display: inline-block;
+    transition: background 0.2s;
+}
+
+.carousel-dot-active {
+    background: var(--color-primary);
+}

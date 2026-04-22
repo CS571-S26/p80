@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router";
 import { Outlet } from "react-router";
 import { getCookie } from "../cookies.js";
 import { Navbar, Nav, Form, Button, Container } from "react-bootstrap";
+import logo from "../assets/HighscoreLogo.png";
 
 function Layout() {
     const [darkMode, setDarkMode] = useState(() => localStorage.getItem("darkMode") === "true");
@@ -28,10 +29,10 @@ function Layout() {
             <Navbar expand="lg" className="px-3 app-navbar">
                 <Navbar.Brand as={Link} to="/">
                     <img
-                        src="https://placehold.co/40x40"
+                        src={logo}
                         alt="Logo"
-                        width="40"
-                        height="40"
+                        width="60"
+                        height="60"
                         className="me-2"
                     />
                     <span className="navbar-brand-text">Highscore</span>

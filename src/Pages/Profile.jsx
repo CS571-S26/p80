@@ -1,13 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { Button, Form, Alert, Spinner } from "react-bootstrap";
-import { doc, getDoc, updateDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
+import { doc, getDoc, updateDoc, collection, query, where, getDocs, orderBy, writeBatch } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import { db, auth } from "../firebase.js";
 import { getCookie, deleteCookie } from "../cookies.js";
 import { useNavigate } from "react-router";
-import ReviewSlice from "../Components/ReviewSlice.jsx";
-
-const PAGE_SIZE = 3;
+import ReviewCarousel from "../Components/ReviewCarousel.jsx";
 
 function AverageStars({ reviews }) {
     const rated = reviews.filter(r => r.ratings?.Rating > 0);
@@ -48,7 +46,6 @@ function Profile() {
     const [loading, setLoading] = useState(true);
     const [confirmLogout, setConfirmLogout] = useState(false);
     const [reviews, setReviews] = useState([]);
-    const [page, setPage] = useState(0);
     const usernameRef = useRef();
     const navigate = useNavigate();
 
@@ -82,9 +79,17 @@ function Profile() {
             return;
         }
         await updateDoc(doc(db, "users", uid), { username: newUsername });
+
+        const reviewsSnap = await getDocs(query(collection(db, "reviews"), where("uid", "==", uid)));
+        if (!reviewsSnap.empty) {
+            const batch = writeBatch(db);
+            reviewsSnap.docs.forEach(d => batch.update(d.ref, { username: newUsername }));
+            await batch.commit();
+        }
+
         setEditing(false);
-        const snap = await getDoc(doc(db, "users", uid));
-        if (snap.exists()) setUsername(snap.data().username);
+        setUsername(newUsername);
+        setReviews(prev => prev.map(r => ({ ...r, username: newUsername })));
     }
 
     async function handleLogout() {
@@ -94,13 +99,10 @@ function Profile() {
         navigate("/");
     }
 
-    const totalPages = Math.ceil(reviews.length / PAGE_SIZE);
-    const pageReviews = reviews.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
-
     if (loading) return <div className="app-profile"><Spinner animation="border" /></div>;
 
     return (
-        <div className="app-profile" style={{ padding: "20px", minHeight: "calc(100vh - 80px)", display: "flex", flexDirection: "column" }}>
+        <div className="app-profile" style={{ padding: "12px 8px", minHeight: "calc(100vh - 80px)", display: "flex", flexDirection: "column" }}>
             <div>
                 <h1 style={{ fontSize: "64px" }}>{username}</h1>
                 <AverageStars reviews={reviews} />
@@ -133,30 +135,7 @@ function Profile() {
                 {reviews.length > 0 && (
                     <div className="mt-4">
                         <h5 style={{ color: "var(--color-text-muted)", marginBottom: "12px" }}>My Reviews</h5>
-                        {pageReviews.map(r => <ReviewSlice key={r.id} review={r} />)}
-                        {totalPages > 1 && (
-                            <div className="d-flex align-items-center gap-3 mt-2">
-                                <Button
-                                    variant="outline-secondary"
-                                    size="sm"
-                                    disabled={page === 0}
-                                    onClick={() => setPage(p => p - 1)}
-                                >
-                                    ← Prev
-                                </Button>
-                                <span style={{ fontSize: "0.85rem", color: "var(--color-text-muted)" }}>
-                                    {page + 1} / {totalPages}
-                                </span>
-                                <Button
-                                    variant="outline-secondary"
-                                    size="sm"
-                                    disabled={page >= totalPages - 1}
-                                    onClick={() => setPage(p => p + 1)}
-                                >
-                                    Next →
-                                </Button>
-                            </div>
-                        )}
+                        <ReviewCarousel reviews={reviews} />
                     </div>
                 )}
             </div>
