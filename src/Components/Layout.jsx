@@ -48,7 +48,6 @@ function Layout() {
                     <Nav className="me-auto align-items-md-center gap-md-2 mt-2 mt-md-0">
                         <Nav.Link as={Link} to="/">Home</Nav.Link>
                         <Nav.Link as={Link} to="/browse">Browse</Nav.Link>
-                        {loggedIn && <Nav.Link as={Link} to="/write-review">Write Review</Nav.Link>}
                         <Form className="d-flex mt-2 mt-md-0">
                             <Form.Control
                                 type="search"
@@ -61,6 +60,7 @@ function Layout() {
                     </Nav>
 
                     <div className="d-flex align-items-center gap-2 mt-2 mt-md-0 mb-2 mb-md-0">
+                        {loggedIn && <Nav.Link as={Link} to="/write-review" className="order-first order-md-0">Write Review</Nav.Link>}
                         <Button variant="outline-secondary" onClick={toggleDarkMode}>
                             {darkMode ? "Dark" : "Light"}
                         </Button>
