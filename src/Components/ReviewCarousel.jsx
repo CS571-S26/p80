@@ -24,7 +24,7 @@ function usePerPage(breakpoints) {
 const DEFAULT_BREAKPOINTS = [[0, 1], [768, 2], [992, 3]];
 const DEFAULT_COL_PROPS = { xs: 12, md: 6, lg: 4 };
 
-function ReviewCarousel({ reviews, breakpoints = DEFAULT_BREAKPOINTS, colProps = DEFAULT_COL_PROPS }) {
+function ReviewCarousel({ reviews, breakpoints = DEFAULT_BREAKPOINTS, colProps = DEFAULT_COL_PROPS, onDelete = null, confirmDeleteId = null }) {
     const perPage = usePerPage(breakpoints);
     const [page, setPage] = useState(0);
     const [animState, setAnimState] = useState(null);
@@ -72,7 +72,11 @@ function ReviewCarousel({ reviews, breakpoints = DEFAULT_BREAKPOINTS, colProps =
                         <Row className="g-3">
                             {pageReviews.map(r => (
                                 <Col key={r.id} {...colProps}>
-                                    <ReviewSlice review={r} />
+                                    <ReviewSlice
+                                        review={r}
+                                        onDelete={onDelete}
+                                        confirmDeleteId={confirmDeleteId}
+                                    />
                                 </Col>
                             ))}
                         </Row>

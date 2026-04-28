@@ -18,6 +18,7 @@ function App(){
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/profile" element={<Profile />} />
+                    <Route path="/profile/:profileUid" element={<Profile />} />
                     <Route path="/write-review" element={<Review />} />
                     <Route path="/search" element={<SearchResultPage />} />
                     <Route path="*" element={<Navigate to="/" replace />} />

@@ -4,8 +4,8 @@ import { Spinner } from "react-bootstrap";
 import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { db } from "../firebase.js";
 import ReviewCarousel from "../Components/ReviewCarousel.jsx";
+import ProfileSlice from "../Components/ProfileSlice.jsx";
 
-// Fetch a generous pool so filtering by substring still yields up to 30 results
 const FETCH_POOL = 300;
 const DISPLAY_LIMIT = 30;
 
@@ -23,51 +23,86 @@ function SearchResultPage() {
     const [searchParams] = useSearchParams();
     const queryText = searchParams.get("q") || "";
 
-    const [results, setResults] = useState([]);
+    const [reviewResults, setReviewResults] = useState([]);
+    const [profileResults, setProfileResults] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!queryText) {
-            setResults([]);
+            setReviewResults([]);
+            setProfileResults([]);
             setLoading(false);
             return;
         }
 
         setLoading(true);
+
         async function fetchAndFilter() {
-            const q = query(
-                collection(db, "reviews"),
-                orderBy("postedAt", "desc"),
-                limit(FETCH_POOL)
-            );
-            const snap = await getDocs(q);
             const lower = queryText.toLowerCase();
-            const filtered = snap.docs
-                .map(d => ({ id: d.id, ...d.data() }))
+
+            const [reviewSnap, userSnap] = await Promise.all([
+                getDocs(query(collection(db, "reviews"), orderBy("postedAt", "desc"), limit(FETCH_POOL))),
+                getDocs(collection(db, "users")),
+            ]);
+
+            const allReviews = reviewSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+            const reviewsByUid = {};
+            allReviews.forEach(r => {
+                if (!reviewsByUid[r.uid]) reviewsByUid[r.uid] = [];
+                reviewsByUid[r.uid].push(r);
+            });
+
+            const filtered = allReviews
                 .filter(r => r.title?.toLowerCase().includes(lower))
                 .slice(0, DISPLAY_LIMIT);
-            setResults(filtered);
+            setReviewResults(filtered);
+
+            const matchedUsers = userSnap.docs
+                .filter(d => d.data().username?.toLowerCase().includes(lower))
+                .map(d => ({ uid: d.id, user: d.data(), reviews: reviewsByUid[d.id] ?? [] }));
+            setProfileResults(matchedUsers);
+
             setLoading(false);
         }
+
         fetchAndFilter();
     }, [queryText]);
 
     return (
-        <div className="app-search" style={{ padding: "12px 8px" }}>
+        <div className="app-search" style={{ padding: "12px 8px 48px" }}>
             <h1>Results</h1>
             <h5 style={{ color: "var(--color-text-muted)", marginBottom: "16px" }}>
                 {queryText ? <>for "<strong>{queryText}</strong>"</> : ""}
             </h5>
-            {loading
-                ? <Spinner animation="border" />
-                : results.length === 0
-                    ? <p style={{ color: "var(--color-text-muted)" }}>No reviews found.</p>
-                    : <ReviewCarousel
-                        reviews={results}
-                        breakpoints={SEARCH_BREAKPOINTS}
-                        colProps={SEARCH_COL_PROPS}
-                      />
-            }
+
+            {loading ? <Spinner animation="border" /> : (
+                <>
+                    <div className="mb-4">
+                        <h5 style={{ color: "var(--color-text-muted)", marginBottom: "12px" }}>Profiles</h5>
+                        {profileResults.length === 0
+                            ? <p style={{ color: "var(--color-text-muted)" }}>No profiles found.</p>
+                            : <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", maxWidth: "1720px" }}>
+                                {profileResults.map(({ uid, user, reviews }) => (
+                                    <ProfileSlice key={uid} uid={uid} user={user} reviews={reviews} />
+                                ))}
+                              </div>
+                        }
+                    </div>
+
+                    <div>
+                        <h5 style={{ color: "var(--color-text-muted)", marginBottom: "12px" }}>Reviews</h5>
+                        {reviewResults.length === 0
+                            ? <p style={{ color: "var(--color-text-muted)" }}>No reviews found.</p>
+                            : <ReviewCarousel
+                                reviews={reviewResults}
+                                breakpoints={SEARCH_BREAKPOINTS}
+                                colProps={SEARCH_COL_PROPS}
+                              />
+                        }
+                    </div>
+                </>
+            )}
         </div>
     );
 }

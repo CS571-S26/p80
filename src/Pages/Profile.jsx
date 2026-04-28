@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { Button, Form, Alert, Spinner } from "react-bootstrap";
-import { doc, getDoc, updateDoc, collection, query, where, getDocs, orderBy, writeBatch } from "firebase/firestore";
+import { doc, getDoc, updateDoc, collection, query, where, getDocs, orderBy, writeBatch, deleteDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import { db, auth } from "../firebase.js";
 import { getCookie, deleteCookie } from "../cookies.js";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import ReviewCarousel from "../Components/ReviewCarousel.jsx";
 
 function AverageStars({ reviews }) {
@@ -40,26 +40,42 @@ function AverageStars({ reviews }) {
 }
 
 function Profile() {
+    const { profileUid: paramUid } = useParams();
+    const myUid = getCookie("uid");
+    const profileUid = paramUid ?? myUid;
+    const isOwn = profileUid === myUid;
+
     const [username, setUsername] = useState(null);
+    const [favoriteGame, setFavoriteGame] = useState("");
+    const [isFollowing, setIsFollowing] = useState(false);
     const [editing, setEditing] = useState(false);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
     const [confirmLogout, setConfirmLogout] = useState(false);
+    const [confirmDeleteId, setConfirmDeleteId] = useState(null);
     const confirmBtnRef = useRef();
     const [reviews, setReviews] = useState([]);
     const usernameRef = useRef();
+    const favoriteGameRef = useRef();
     const navigate = useNavigate();
-
-    const uid = getCookie("uid");
 
     async function fetchData() {
         setLoading(true);
-        const userSnap = await getDoc(doc(db, "users", uid));
-        if (userSnap.exists()) setUsername(userSnap.data().username);
+        const userSnap = await getDoc(doc(db, "users", profileUid));
+        if (userSnap.exists()) {
+            setUsername(userSnap.data().username);
+            setFavoriteGame(userSnap.data().favoriteGame ?? "");
+        }
+
+        if (!isOwn && myUid) {
+            const mySnap = await getDoc(doc(db, "users", myUid));
+            const following = mySnap.data()?.following ?? [];
+            setIsFollowing(following.includes(profileUid));
+        }
 
         const q = query(
             collection(db, "reviews"),
-            where("uid", "==", uid),
+            where("uid", "==", profileUid),
             orderBy("postedAt", "desc")
         );
         const snap = await getDocs(q);
@@ -69,7 +85,7 @@ function Profile() {
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [profileUid]);
 
     async function handleUsernameSubmit(e) {
         e.preventDefault();
@@ -79,9 +95,10 @@ function Profile() {
             setError("Username must be at least 3 characters.");
             return;
         }
-        await updateDoc(doc(db, "users", uid), { username: newUsername });
+        const newFavoriteGame = favoriteGameRef.current.value.trim();
+        await updateDoc(doc(db, "users", myUid), { username: newUsername, favoriteGame: newFavoriteGame });
 
-        const reviewsSnap = await getDocs(query(collection(db, "reviews"), where("uid", "==", uid)));
+        const reviewsSnap = await getDocs(query(collection(db, "reviews"), where("uid", "==", myUid)));
         if (!reviewsSnap.empty) {
             const batch = writeBatch(db);
             reviewsSnap.docs.forEach(d => batch.update(d.ref, { username: newUsername }));
@@ -90,6 +107,7 @@ function Profile() {
 
         setEditing(false);
         setUsername(newUsername);
+        setFavoriteGame(newFavoriteGame);
         setReviews(prev => prev.map(r => ({ ...r, username: newUsername })));
     }
 
@@ -107,6 +125,30 @@ function Profile() {
         };
     }, [confirmLogout]);
 
+    useEffect(() => {
+        if (!confirmDeleteId) return;
+        function cancel(e) {
+            if (e.target.closest("[data-delete-btn]")) return;
+            setConfirmDeleteId(null);
+        }
+        document.addEventListener("mousedown", cancel);
+        return () => document.removeEventListener("mousedown", cancel);
+    }, [confirmDeleteId]);
+
+    async function handleDeleteReview(id) {
+        await deleteDoc(doc(db, "reviews", id));
+        setReviews(prev => prev.filter(r => r.id !== id));
+        setConfirmDeleteId(null);
+    }
+
+    async function handleFollowToggle() {
+        const update = isFollowing
+            ? arrayRemove(profileUid)
+            : arrayUnion(profileUid);
+        await updateDoc(doc(db, "users", myUid), { following: update });
+        setIsFollowing(prev => !prev);
+    }
+
     async function handleLogout() {
         await signOut(auth);
         deleteCookie("uid");
@@ -122,15 +164,33 @@ function Profile() {
                 <h1 style={{ fontSize: "64px" }}>{username}</h1>
                 <AverageStars reviews={reviews} />
 
-                {!editing && (
-                    <Button variant="outline-secondary" size="sm" className="mt-1" onClick={() => setEditing(true)}>
-                        Change Username
+                {!isOwn && myUid && (
+                    <Button
+                        variant={isFollowing ? "secondary" : "primary"}
+                        size="sm"
+                        className="mt-1 mb-2"
+                        onClick={handleFollowToggle}
+                    >
+                        {isFollowing ? "Unfollow" : "Follow"}
                     </Button>
                 )}
-                {editing && (
+
+                {favoriteGame && (
+                    <p style={{ color: "var(--color-text-muted)", fontSize: "0.95rem", marginBottom: "8px" }}>
+                        Favorite Game: <strong style={{ color: "var(--color-text)" }}>{favoriteGame}</strong>
+                    </p>
+                )}
+
+                {isOwn && !editing && (
+                    <Button variant="outline-secondary" size="sm" className="mt-1" onClick={() => setEditing(true)}>
+                        Edit Profile
+                    </Button>
+                )}
+                {isOwn && editing && (
                     <Form onSubmit={handleUsernameSubmit} className="mt-2" style={{ maxWidth: "300px" }}>
                         {error && <Alert variant="danger">{error}</Alert>}
                         <Form.Group className="mb-2">
+                            <Form.Label style={{ fontSize: "0.85rem", color: "var(--color-text-muted)", marginBottom: "2px" }}>Username</Form.Label>
                             <Form.Control
                                 type="text"
                                 ref={usernameRef}
@@ -138,6 +198,16 @@ function Profile() {
                                 minLength={3}
                                 maxLength={22}
                                 required
+                            />
+                        </Form.Group>
+                        <Form.Group className="mb-2">
+                            <Form.Label style={{ fontSize: "0.85rem", color: "var(--color-text-muted)", marginBottom: "2px" }}>Favorite Game</Form.Label>
+                            <Form.Control
+                                type="text"
+                                ref={favoriteGameRef}
+                                defaultValue={favoriteGame}
+                                maxLength={60}
+                                placeholder="Leave blank to hide"
                             />
                         </Form.Group>
                         <div className="d-flex gap-2">
@@ -149,18 +219,32 @@ function Profile() {
 
                 {reviews.length > 0 && (
                     <div className="mt-4">
-                        <h5 style={{ color: "var(--color-text-muted)", marginBottom: "12px" }}>My Reviews</h5>
-                        <ReviewCarousel reviews={reviews} />
+                        <h5 style={{ color: "var(--color-text-muted)", marginBottom: "12px" }}>
+                            {isOwn ? "My Reviews" : `${username}'s Reviews`}
+                        </h5>
+                        <ReviewCarousel
+                            reviews={reviews}
+                            onDelete={isOwn ? (id) => {
+                                if (confirmDeleteId === id) {
+                                    handleDeleteReview(id);
+                                } else {
+                                    setConfirmDeleteId(id);
+                                }
+                            } : null}
+                            confirmDeleteId={confirmDeleteId}
+                        />
                     </div>
                 )}
             </div>
 
-            <div style={{ marginTop: "auto", paddingBottom: "24px" }}>
-                {!confirmLogout
-                    ? <Button variant="danger" onClick={() => setConfirmLogout(true)}>Log Out</Button>
-                    : <Button ref={confirmBtnRef} variant="danger" onClick={handleLogout}>Are You Sure?</Button>
-                }
-            </div>
+            {isOwn && (
+                <div style={{ marginTop: "auto", paddingBottom: "24px" }}>
+                    {!confirmLogout
+                        ? <Button variant="danger" onClick={() => setConfirmLogout(true)}>Log Out</Button>
+                        : <Button ref={confirmBtnRef} variant="danger" onClick={handleLogout}>Are You Sure?</Button>
+                    }
+                </div>
+            )}
         </div>
     );
 }

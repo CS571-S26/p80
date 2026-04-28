@@ -1,4 +1,5 @@
 import { Card, Badge } from "react-bootstrap";
+import { useNavigate } from "react-router";
 
 const STAR_CATEGORIES = ["Rating", "Art", "Gameplay", "Story"];
 
@@ -36,8 +37,9 @@ function StarDisplay({ label, value }) {
     );
 }
 
-function ReviewSlice({ review }) {
+function ReviewSlice({ review, onDelete = null, confirmDeleteId = null }) {
     const {
+        uid,
         username,
         title,
         description,
@@ -47,17 +49,51 @@ function ReviewSlice({ review }) {
         ratings,
         postedAt
     } = review;
+    const navigate = useNavigate();
 
     const date = postedAt?.toDate
         ? postedAt.toDate().toLocaleDateString()
         : null;
 
+    const isPendingDelete = confirmDeleteId === review.id;
+
     return (
-        <Card className="mb-3">
+        <Card
+            className="mb-3"
+            style={{ cursor: "pointer" }}
+            onClick={e => { if (!e.target.closest("[data-delete-btn]")) navigate(`/profile/${uid}`); }}
+        >
             <Card.Body>
-                <Card.Title style={{ fontSize: "1.1rem" }}>
-                    <span style={{ color: "var(--color-text-muted)", fontWeight: 400 }}>{username}'s review of </span>
-                    {title}
+                <Card.Title style={{ fontSize: "1.1rem", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <span>
+                        <span style={{ color: "var(--color-text-muted)", fontWeight: 400 }}>{username}'s review of </span>
+                        {title}
+                    </span>
+                    {onDelete && (
+                        <button
+                            data-delete-btn
+                            onClick={() => onDelete(review.id)}
+                            style={{
+                                background: "#dc3545",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                color: "white",
+                                fontSize: isPendingDelete ? "1rem" : "1.5rem",
+                                width: "4.2rem",
+                                height: "2.2rem",
+                                marginLeft: "8px",
+                                flexShrink: 0,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                padding: 0,
+                            }}
+                            title={isPendingDelete ? "Click to confirm deletion" : "Delete review"}
+                        >
+                            {isPendingDelete ? "confirm?" : "🗑"}
+                        </button>
+                    )}
                 </Card.Title>
 
                 <div className="mb-3">
