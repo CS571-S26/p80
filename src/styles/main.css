@@ -60,6 +60,29 @@ body {
 }
 
 /* =====================
+   Mobile
+   ===================== */
+
+@media (max-width: 767px) {
+    .app-navbar .navbar-nav .nav-link {
+        padding-top: 6px;
+        padding-bottom: 6px;
+    }
+
+    .app-navbar form.d-flex {
+        width: 100%;
+    }
+
+    .app-navbar form.d-flex .form-control {
+        width: 100%;
+    }
+
+    .app-profile h1 {
+        font-size: 2.5rem !important;
+    }
+}
+
+/* =====================
    Review Carousel
    ===================== */
 

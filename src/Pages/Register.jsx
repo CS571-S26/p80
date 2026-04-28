@@ -26,7 +26,13 @@ function Register() {
             setCookie("uid", cred.user.uid);
             navigate("/");
         } catch (err) {
-            setError(err.message);
+            if(err.message.includes("6 characters")) {
+                setError("Password must be at least 6 characters long.");
+            } else if(err.message.includes("already in use")) {
+                setError("This email is already registered.");
+            } else {
+                setError("Failed to register. Please try again.");
+            }
         }
     }
 

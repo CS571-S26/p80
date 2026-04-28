@@ -37,7 +37,7 @@ function StarDisplay({ label, value }) {
     );
 }
 
-function ReviewSlice({ review, onDelete = null, confirmDeleteId = null }) {
+function ReviewSlice({ review, onDelete = null, confirmDeleteId = null, disableNavigation = false }) {
     const {
         uid,
         username,
@@ -60,8 +60,8 @@ function ReviewSlice({ review, onDelete = null, confirmDeleteId = null }) {
     return (
         <Card
             className="mb-3"
-            style={{ cursor: "pointer" }}
-            onClick={e => { if (!e.target.closest("[data-delete-btn]")) navigate(`/profile/${uid}`); }}
+            style={{ cursor: disableNavigation ? "default" : "pointer" }}
+            onClick={disableNavigation ? undefined : e => { if (!e.target.closest("[data-delete-btn]")) navigate(`/profile/${uid}`); }}
         >
             <Card.Body>
                 <Card.Title style={{ fontSize: "1.1rem", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>

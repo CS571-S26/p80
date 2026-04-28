@@ -41,7 +41,7 @@ function ProfileSlice({ uid, user, reviews = [] }) {
 
     return (
         <Card
-            style={{ width: "160px", flexShrink: 0, cursor: "pointer" }}
+            style={{ width: "100%", cursor: "pointer" }}
             onClick={() => navigate(`/profile/${uid}`)}
         >
             <Card.Body style={{ padding: "12px" }}>

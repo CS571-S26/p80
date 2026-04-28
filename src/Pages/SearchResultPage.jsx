@@ -4,20 +4,15 @@ import { Spinner } from "react-bootstrap";
 import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { db } from "../firebase.js";
 import ReviewCarousel from "../Components/ReviewCarousel.jsx";
-import ProfileSlice from "../Components/ProfileSlice.jsx";
+import ProfileCarousel from "../Components/ProfileCarousel.jsx";
 
 const FETCH_POOL = 300;
 const DISPLAY_LIMIT = 30;
 
-const SEARCH_BREAKPOINTS = [
-    [0,    1],
-    [576,  2],
-    [768,  3],
-    [992,  4],
-    [1200, 6],
-];
+const REVIEW_BREAKPOINTS = [[0, 1], [576, 2], [768, 3], [992, 4], [1200, 6]];
+const REVIEW_COL_PROPS = { xs: 12, sm: 6, md: 4, lg: 3, xl: 2 };
 
-const SEARCH_COL_PROPS = { xs: 12, sm: 6, md: 4, lg: 3, xl: 2 };
+const PROFILE_BREAKPOINTS = [[0, 2], [576, 3], [768, 4], [992, 5]];
 
 function SearchResultPage() {
     const [searchParams] = useSearchParams();
@@ -82,11 +77,7 @@ function SearchResultPage() {
                         <h5 style={{ color: "var(--color-text-muted)", marginBottom: "12px" }}>Profiles</h5>
                         {profileResults.length === 0
                             ? <p style={{ color: "var(--color-text-muted)" }}>No profiles found.</p>
-                            : <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", maxWidth: "1720px" }}>
-                                {profileResults.map(({ uid, user, reviews }) => (
-                                    <ProfileSlice key={uid} uid={uid} user={user} reviews={reviews} />
-                                ))}
-                              </div>
+                            : <ProfileCarousel profiles={profileResults} breakpoints={PROFILE_BREAKPOINTS} />
                         }
                     </div>
 
@@ -96,8 +87,8 @@ function SearchResultPage() {
                             ? <p style={{ color: "var(--color-text-muted)" }}>No reviews found.</p>
                             : <ReviewCarousel
                                 reviews={reviewResults}
-                                breakpoints={SEARCH_BREAKPOINTS}
-                                colProps={SEARCH_COL_PROPS}
+                                breakpoints={REVIEW_BREAKPOINTS}
+                                colProps={REVIEW_COL_PROPS}
                               />
                         }
                     </div>

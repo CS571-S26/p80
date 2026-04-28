@@ -2,13 +2,16 @@ import { useState, useEffect } from "react";
 import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase.js";
 import { getCookie } from "../cookies.js";
-import ProfileSlice from "../Components/ProfileSlice.jsx";
+import ProfileCarousel from "../Components/ProfileCarousel.jsx";
 import ReviewCarousel from "../Components/ReviewCarousel.jsx";
-import { Card, Button, Spinner } from "react-bootstrap";
+import WelcomeCard from "../Components/WelcomeCard.jsx";
+import { Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router";
 
-const BROWSE_BREAKPOINTS = [[0, 1], [576, 2], [768, 3], [992, 4], [1200, 6]];
-const BROWSE_COL_PROPS = { xs: 12, sm: 6, md: 4, lg: 3, xl: 2 };
+const REVIEW_BREAKPOINTS = [[0, 1], [576, 2], [768, 3], [992, 4], [1200, 6]];
+const REVIEW_COL_PROPS = { xs: 12, sm: 6, md: 4, lg: 3, xl: 2 };
+
+const PROFILE_BREAKPOINTS = [[0, 2], [576, 3], [768, 4], [992, 5]];
 
 function Home() {
     const uid = getCookie("uid");
@@ -63,18 +66,7 @@ function Home() {
         return (
             <div className="app-home">
                 <h1>Home</h1>
-                <Card className="mt-3" style={{ maxWidth: "380px" }}>
-                    <Card.Body>
-                        <Card.Title>Welcome</Card.Title>
-                        <Card.Text style={{ color: "var(--color-text-muted)" }}>
-                            Log in to write reviews and get personalized recommendations.
-                        </Card.Text>
-                        <div className="d-flex gap-2">
-                            <Button variant="primary" onClick={() => navigate("/login")}>Log In</Button>
-                            <Button variant="outline-secondary" onClick={() => navigate("/register")}>Register</Button>
-                        </div>
-                    </Card.Body>
-                </Card>
+                <WelcomeCard />
             </div>
         );
     }
@@ -88,7 +80,7 @@ function Home() {
             <div className="mt-3">
                 <h5 style={{ color: "var(--color-text-muted)", marginBottom: "12px" }}>Following's Reviews</h5>
                 {followedReviews.length > 0
-                    ? <ReviewCarousel reviews={followedReviews} breakpoints={BROWSE_BREAKPOINTS} colProps={BROWSE_COL_PROPS} />
+                    ? <ReviewCarousel reviews={followedReviews} breakpoints={REVIEW_BREAKPOINTS} colProps={REVIEW_COL_PROPS} />
                     : <p style={{ color: "var(--color-text-muted)", fontSize: "0.9rem" }}>
                         {hasFollowing ? "No reviews yet from people you follow." : "Follow some users to see their reviews here."}
                       </p>
@@ -98,11 +90,7 @@ function Home() {
             {recommendedUsers.length > 0 && (
                 <div className="mt-4">
                     <h5 style={{ color: "var(--color-text-muted)", marginBottom: "12px" }}>Recommended Profiles</h5>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", maxWidth: "1720px" }}>
-                        {recommendedUsers.map(({ uid: rUid, user, reviews }) => (
-                            <ProfileSlice key={rUid} uid={rUid} user={user} reviews={reviews} />
-                        ))}
-                    </div>
+                    <ProfileCarousel profiles={recommendedUsers} breakpoints={PROFILE_BREAKPOINTS} />
                 </div>
             )}
         </div>

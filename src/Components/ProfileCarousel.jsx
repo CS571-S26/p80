@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { Row, Col } from "react-bootstrap";
-import ReviewSlice from "./ReviewSlice.jsx";
+import ProfileSlice from "./ProfileSlice.jsx";
 
-// breakpoints: sorted array of [minWidth, perPageCount]
+const GAP = 12;
+
 function usePerPage(breakpoints) {
     function calc() {
         const w = window.innerWidth;
@@ -21,17 +21,14 @@ function usePerPage(breakpoints) {
     return perPage;
 }
 
-const DEFAULT_BREAKPOINTS = [[0, 1], [768, 2], [992, 3]];
-const DEFAULT_COL_PROPS = { xs: 12, md: 6, lg: 4 };
-
-function ReviewCarousel({ reviews, breakpoints = DEFAULT_BREAKPOINTS, colProps = DEFAULT_COL_PROPS, onDelete = null, confirmDeleteId = null, disableNavigation = false }) {
+function ProfileCarousel({ profiles, breakpoints }) {
     const perPage = usePerPage(breakpoints);
     const [page, setPage] = useState(0);
     const [animState, setAnimState] = useState(null);
     const timerRef = useRef(null);
 
-    const totalPages = Math.ceil(reviews.length / perPage);
-    const pageReviews = reviews.slice(page * perPage, page * perPage + perPage);
+    const totalPages = Math.ceil(profiles.length / perPage);
+    const pageProfiles = profiles.slice(page * perPage, page * perPage + perPage);
 
     useEffect(() => {
         setPage(0);
@@ -63,34 +60,31 @@ function ReviewCarousel({ reviews, breakpoints = DEFAULT_BREAKPOINTS, colProps =
                     className={`carousel-arrow ${canLeft ? "carousel-arrow-active" : "carousel-arrow-disabled"}`}
                     onClick={() => canLeft && navigate("left")}
                     disabled={!canLeft}
-                    aria-label="Newer reviews"
-                >
-                    ‹
-                </button>
+                    aria-label="Previous profiles"
+                >‹</button>
                 <div className="carousel-viewport">
                     <div className={`carousel-track ${animState || ""}`}>
-                        <Row className="g-3">
-                            {pageReviews.map(r => (
-                                <Col key={r.id} {...colProps}>
-                                    <ReviewSlice
-                                        review={r}
-                                        onDelete={onDelete}
-                                        confirmDeleteId={confirmDeleteId}
-                                        disableNavigation={disableNavigation}
-                                    />
-                                </Col>
+                        <div style={{ display: "flex", gap: `${GAP}px` }}>
+                            {pageProfiles.map(({ uid, user, reviews }) => (
+                                <div
+                                    key={uid}
+                                    style={{
+                                        flex: `0 0 calc((100% - ${(perPage - 1) * GAP}px) / ${perPage})`,
+                                        minWidth: 0,
+                                    }}
+                                >
+                                    <ProfileSlice uid={uid} user={user} reviews={reviews} />
+                                </div>
                             ))}
-                        </Row>
+                        </div>
                     </div>
                 </div>
                 <button
                     className={`carousel-arrow ${canRight ? "carousel-arrow-active" : "carousel-arrow-disabled"}`}
                     onClick={() => canRight && navigate("right")}
                     disabled={!canRight}
-                    aria-label="Older reviews"
-                >
-                    ›
-                </button>
+                    aria-label="Next profiles"
+                >›</button>
             </div>
             {totalPages > 1 && (
                 <div className="carousel-dots">
@@ -103,4 +97,4 @@ function ReviewCarousel({ reviews, breakpoints = DEFAULT_BREAKPOINTS, colProps =
     );
 }
 
-export default ReviewCarousel;
+export default ProfileCarousel;

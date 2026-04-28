@@ -224,6 +224,7 @@ function Profile() {
                         </h5>
                         <ReviewCarousel
                             reviews={reviews}
+                            disableNavigation
                             onDelete={isOwn ? (id) => {
                                 if (confirmDeleteId === id) {
                                     handleDeleteReview(id);

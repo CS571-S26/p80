@@ -36,24 +36,20 @@ function Layout() {
 
     return (
         <div style={{ minHeight: "100vh" }}>
-            <Navbar expand="lg" className="px-3 app-navbar">
+            <Navbar expand="md" className="px-3 app-navbar">
                 <Navbar.Brand as={Link} to="/">
-                    <img
-                        src={logo}
-                        alt="Logo"
-                        width="60"
-                        height="60"
-                        className="me-2"
-                    />
+                    <img src={logo} alt="Logo" width="60" height="60" className="me-2" />
                     <span className="navbar-brand-text">Highscore</span>
                 </Navbar.Brand>
 
                 <Navbar.Toggle aria-controls="main-nav" />
+
                 <Navbar.Collapse id="main-nav">
-                    <Nav className="me-auto align-items-center gap-2">
+                    <Nav className="me-auto align-items-md-center gap-md-2 mt-2 mt-md-0">
                         <Nav.Link as={Link} to="/">Home</Nav.Link>
                         <Nav.Link as={Link} to="/browse">Browse</Nav.Link>
-                        <Form className="d-flex ms-2">
+                        {loggedIn && <Nav.Link as={Link} to="/write-review">Write Review</Nav.Link>}
+                        <Form className="d-flex mt-2 mt-md-0">
                             <Form.Control
                                 type="search"
                                 placeholder="Search..."
@@ -64,17 +60,8 @@ function Layout() {
                         </Form>
                     </Nav>
 
-                    <div className="d-flex align-items-center gap-2">
-                        {loggedIn
-                            ? <Nav className="me-auto align-items-center gap-2">
-                                <Nav.Link as={Link} to="/write-review">Write Review</Nav.Link>
-                            </Nav>
-                            : null
-                        }
-                        <Button
-                            variant="outline-secondary"
-                            onClick={toggleDarkMode}
-                        >
+                    <div className="d-flex align-items-center gap-2 mt-2 mt-md-0 mb-2 mb-md-0">
+                        <Button variant="outline-secondary" onClick={toggleDarkMode}>
                             {darkMode ? "Dark" : "Light"}
                         </Button>
                         {loggedIn
