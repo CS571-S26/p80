@@ -66,6 +66,9 @@ function Home() {
         return (
             <div className="app-home">
                 <h1>Home</h1>
+                <p style={{color: "var(--color-text-muted)" }}>
+                    Welcome to Highscore! Join a community of video game fans to argue about which games are the best, and what even matter is game review scores. Log in below to create reviews, follow other users, and more!
+                </p>
                 <WelcomeCard />
             </div>
         );
